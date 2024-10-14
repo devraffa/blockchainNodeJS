@@ -4,7 +4,7 @@
 Este documento descreve o desenvolvimento de um projeto de blockchain implementado em Node.js, como parte do primeiro trabalho da Compass. O projeto consiste em uma implementação simples de uma blockchain, onde blocos contêm transações que são mineradas e verificadas.
 
 ## Tecnologias Utilizadas
-- Node.js
+- node.js
 - JavaScript.js 
 - Git
 - Crypto (módulo do Node.js): Utilizado para a criação do hash SHA-256
