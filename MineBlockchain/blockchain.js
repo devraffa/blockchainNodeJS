@@ -2,31 +2,30 @@ const Block = require('./block');
 const Transaction = require('./transaction');
 
 class Blockchain {
-    constructor(address) {
+    constructor(Endereco) {
         this.premioMine = 500.00;
-        this.chain = [this.createGenesis(address)];
+        this.chain = [this.criaGenesis(Endereco)];
         this.dif = 4;
         this.pendenciaTrans = [];
     }
 
-    createGenesis(premioMineAddress) {
+    criaGenesis(premioMine_ende) {
         const primeHash = '0000000';  // exemplo do bloco gênesis
-        const genesi_transacao = new Transaction(null, premioMineAddress, this.premioMine);  // certo dessa vez
-        //const transacaoGenesis = new Transacao('[]', address, this.premioMine);
-        return new Block(Date.now(), primeHash, [genesi_transacao]
-    
-    );
+        const genesi_transacao = new Transaction(null, premioMine_ende, this.premioMine);  // certo dessa vez
+        //const transacaoGenesis = new Transacao('[]', Endereco, this.premioMine);
+        return new Block(Date.now(), primeHash, [genesi_transacao]);
+        
     }
 
-    getSaldoAddress(address) {
+    saldoEndereco(Endereco) {
         let saldo = 0;
 
         this.chain.forEach(block => {
             block.data.forEach(transaction => {
-                if (transaction.originEnde === address) {
+                if (transaction.originEnde === Endereco) {
                     saldo -= transaction.valor;
                 }
-                if (transaction.destinEnde === address) {
+                if (transaction.destinEnde === Endereco) {
                     saldo += transaction.valor;
                 }
             });
@@ -35,8 +34,8 @@ class Blockchain {
         return saldo;
     }
 
-    createTransaction(transaction) {
-        const saldo = this.getSaldoAddress(transaction.originEnde);
+    criaTransaction(transaction) {
+        const saldo = this.saldoEndereco(transaction.originEnde);
         let pendente = 0;
 
         this.pendenciaTrans.forEach(tx => {
@@ -54,14 +53,14 @@ class Blockchain {
     }
 
 
-    getultimoBlock() {
+    ultimoBlock() {
         return this.chain[this.chain.length - 1];
     }
 
-    minerarTraPendente(premioMineAddress) {
-        this.pendenciaTrans.push(new Transaction(null, premioMineAddress, this.premioMine));
+    minerarTraPendente(premioMine_ende) {
+        this.pendenciaTrans.push(new Transaction(null, premioMine_ende, this.premioMine));
 
-        let block = new Block(Date.now(), this.getultimoBlock().hash, this.pendenciaTrans);
+        let block = new Block(Date.now(), this.ultimoBlock().hash, this.pendenciaTrans);
         block.mine(this.dif);
 
         this.chain.push(block);
@@ -73,10 +72,10 @@ class Blockchain {
 
         for (let i = 1; i < this.chain.length; i++) {
             const atualBlock = this.chain[i];
-            const previousBlock = this.chain[i - 1];
+            const anteriorBlock = this.chain[i - 1];
 
             // hash anterior
-            if (atualBlock.last_hash !== previousBlock.hash) {
+            if (atualBlock.last_hash !== anteriorBlock.hash) {
                 console.log("hash do bloco anterior não corresponde");
                 return false;
             }
@@ -102,8 +101,8 @@ class Blockchain {
 
             console.log("Transaction:");
             block.data.forEach(transaction => {
-                console.log(`   origin Address: ${transaction.originEnde}`);
-                console.log(`   destiny Address: ${transaction.destinEnde}`);
+                console.log(`   origin Endereco: ${transaction.originEnde}`);
+                console.log(`   destiny Endereco: ${transaction.destinEnde}`);
                 console.log(`   valor: ${transaction.valor}`);
             });
     
