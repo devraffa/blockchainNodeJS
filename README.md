@@ -51,9 +51,23 @@ O código é dividido em três principais classes:
 
 Aqui está um exemplo de como criar transações, minerar blocos e consultar o saldo de um endereço:
 
-![alt text](image.png)
+``` javascript
+
+const bitcoins = new Blockchain('primeiro endereço:');
+
+bitcoins.createTransaction(new Transaction('primeiro endereço', 'segundo endereço', 20)); // teste para saber se está funcionando
+bitcoins.createTransaction(new Transaction('primeiro endereço', 'terceiro endereço', 40)); 
+
+bitcoins.minerarTraPendente('segundo endereço');
+
+bitcoins.printBlockchain();
+
+console.log(`Essa blockchain é válida? ${bitcoins.validBlockchain()}`);
+
+```
+
 
 ## Licença 
 Este projeto está licenciado sob a licença MIT.
 
-![alt text](images.png)
+![alt text](https://novojorbras.com.br/images/noticias/16014/19041851_compass.uo.jpg.jpg)
