@@ -5,7 +5,7 @@ Este documento descreve o desenvolvimento de um projeto de blockchain implementa
 
 ## Tecnologias Utilizadas
 - Node.js
-- JavaScript.js
+- JavaScript.js 
 - Git
 - Crypto (módulo do Node.js): Utilizado para a criação do hash SHA-256
 
