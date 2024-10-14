@@ -11,7 +11,7 @@ class Blockchain {
 
     criaGenesis(premioMine_ende) {
         const primeHash = '0000000';  // exemplo do bloco gênesis
-        const genesi_transacao = new Transaction(null, premioMine_ende, this.premioMine);  // certo dessa vez
+        const genesi_transacao = new Transaction("genesi", premioMine_ende, this.premioMine);  // certo dessa vez
         //const transacaoGenesis = new Transacao('[]', Endereco, this.premioMine);
         return new Block(Date.now(), primeHash, [genesi_transacao]);
         
@@ -36,29 +36,20 @@ class Blockchain {
 
     criaTransaction(transaction) {
         const saldo = this.saldoEndereco(transaction.originEnde);
-        let pendente = 0;
 
-        this.pendenciaTrans.forEach(tx => {
-            if (tx.originEnde === transaction.originEnde) {
-                pendente += tx.valor;
-            }
-        });
-
-
-        if (saldo - pendente < transaction.valor) {
+        if (saldo < transaction.valor) {
             console.log('transação inválida: saldo insuficiente.');
         } else {
             this.pendenciaTrans.push(transaction);
         }
     }
 
-
     ultimoBlock() {
         return this.chain[this.chain.length - 1];
     }
 
     minerarTraPendente(premioMine_ende) {
-        this.pendenciaTrans.push(new Transaction(null, premioMine_ende, this.premioMine));
+        this.pendenciaTrans.push(new Transaction("origem", premioMine_ende, this.premioMine));
 
         let block = new Block(Date.now(), this.ultimoBlock().hash, this.pendenciaTrans);
         block.mine(this.dif);
