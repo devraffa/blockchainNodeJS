@@ -14,8 +14,8 @@ Para conseguir fazer rodar o código é necessário ter o **Node.js** instalado 
 
 1. Crie uma pasta na sua máquina, em seguida abra o CMD (terminal) na pasta e clone este repositório utilizando esse comando:
 `git clone https://github.com/devraffa/blockchainNodeJS.git`
-2. Acesse o diretório onde salvou o projeto e instale as depências necessárias
-   `cd blockchainNodeJS `
+2. Acesse os diretório onde salvou e a pasta MineBlockchain o projeto e instale as depências necessárias
+   `cd blockchainNodeJS cd MineBlockchain `
    ` npm install `
 
 ## Para executar o código 
