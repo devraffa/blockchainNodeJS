@@ -4,17 +4,49 @@ const Transaction = require('./transaction');
 class Blockchain {
     constructor(Endereco) {
         this.premioMine = 500.00;
+        this.firstAddress ="2x000000000000000000000000000000000000000000"
         this.chain = [this.criaGenesis(Endereco)];
         this.dif = 4;
         this.pendenciaTrans = [];
     }
 
     criaGenesis(premioMine_ende) {
-        const primeHash = '0000000';  // exemplo do bloco gênesis
-        const genesi_transacao = new Transaction("genesi", premioMine_ende, this.premioMine);  // certo dessa vez
-        //const transacaoGenesis = new Transacao('[]', Endereco, this.premioMine);
-        return new Block(Date.now(), primeHash, [genesi_transacao]);
+
+
+    const last_hash = ''; 
+    const genesisTransacao = new Transaction(this.firstAddress, premioMine_ende, this.premioMine);  
+    const genesisBlock = new Block(Date.now(), last_hash, [genesisTransacao]);
+    genesisBlock.hash = genesisBlock.calcularhash(); 
+    return genesisBlock;
+
+
+        /*const primeHash = '0000000'; 
+        const genesi_transacao = new Transaction("genesi", premioMine_ende, this.premioMine);  
+        return new Block(Date.now(), primeHash, [genesi_transacao]);*/
         
+    }
+
+    validAddress(endereco) {
+
+        console.log("Verificando endereço: ", endereco);
+
+    if (typeof endereco !== 'string') {
+        console.log("Endereço inválido: O endereço não é uma string.");
+        return false;
+    }
+    
+        const fix = '2x00';
+        if (!endereco.startsWith(fix)) {
+            return false;
+        }
+
+        const addressnotfix = endereco.slice(fix.length);
+        if (addressnotfix.length !== 40) {
+            return false;
+        }
+
+        const hexRegex = /^[0-9a-fA-F]{40}$/;
+        return hexRegex.test(addressnotfix);
     }
 
     saldoEndereco(Endereco) {
@@ -31,25 +63,48 @@ class Blockchain {
             });
         });
 
+        this.pendenciaTrans.forEach(transaction => {
+            if (transaction.originEnde === Endereco) {
+                saldo -= transaction.valor;
+            }
+            if (transaction.destinEnde === Endereco) {
+                saldo += transaction.valor;
+            }
+        });
+
         return saldo;
     }
 
-    criaTransaction(transaction) {
-        const saldo = this.saldoEndereco(transaction.originEnde);
+    criaTransaction(originEnde, destinEnde, valor) {
 
-        if (saldo < transaction.valor) {
-            console.log('transação inválida: saldo insuficiente.');
-        } else {
-            this.pendenciaTrans.push(transaction);
+        if (!this.validAddress(originEnde)) {
+            console.log("transação inválida: endereço de origem inválido.");
+            return;
         }
+    
+        if (!this.validAddress(destinEnde)) {
+            console.log("transação inválida: endereço de destino inválido.");
+            return;
+        }
+    
+        const saldo = this.saldoEndereco(originEnde);
+    
+        if (saldo < valor && originEnde !== this.firstAddress) {
+            console.log('transação inválida: saldo insuficiente.');
+            return;
+        } 
+
+        const transaction = new Transaction(originEnde, destinEnde, valor);
+        this.pendenciaTrans.push(transaction);
     }
+    
 
     ultimoBlock() {
         return this.chain[this.chain.length - 1];
     }
 
     minerarTraPendente(premioMine_ende) {
-        this.pendenciaTrans.push(new Transaction("origem", premioMine_ende, this.premioMine));
+        this.pendenciaTrans.push(new Transaction(this.firstAddress, premioMine_ende, this.premioMine));
 
         let block = new Block(Date.now(), this.ultimoBlock().hash, this.pendenciaTrans);
         block.mine(this.dif);
@@ -79,6 +134,23 @@ class Blockchain {
         }
 
         return true;
+    }
+
+    historicTransaction(Endereco){
+        const history = [];
+
+        this.chain.forEach((block) => {
+            block.data.forEach((transaction) => {
+                if (
+                    transaction.originEnde === Endereco ||
+                    transaction.destinEnde === Endereco
+                ) {
+                    history.push(transaction);
+                }
+            });
+        });
+
+        return history;
     }
 
     printBlockchain() {
