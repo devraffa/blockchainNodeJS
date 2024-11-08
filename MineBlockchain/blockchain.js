@@ -11,18 +11,12 @@ class Blockchain {
     }
 
     criaGenesis(premioMine_ende) {
-
-
+        
     const last_hash = ''; 
     const genesisTransacao = new Transaction(this.firstAddress, premioMine_ende, this.premioMine);  
     const genesisBlock = new Block(Date.now(), last_hash, [genesisTransacao]);
     genesisBlock.hash = genesisBlock.calcularhash(); 
     return genesisBlock;
-
-
-        /*const primeHash = '0000000'; 
-        const genesi_transacao = new Transaction("genesi", premioMine_ende, this.premioMine);  
-        return new Block(Date.now(), primeHash, [genesi_transacao]);*/
         
     }
 
@@ -44,7 +38,7 @@ class Blockchain {
         if (addressnotfix.length !== 40) {
             return false;
         }
-
+            
         const hexRegex = /^[0-9a-fA-F]{40}$/;
         return hexRegex.test(addressnotfix);
     }
@@ -62,7 +56,7 @@ class Blockchain {
                 }
             });
         });
-
+            // para as pendetes que bugavam 
         this.pendenciaTrans.forEach(transaction => {
             if (transaction.originEnde === Endereco) {
                 saldo -= transaction.valor;
