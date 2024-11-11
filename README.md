@@ -1,4 +1,4 @@
-# Documentação sobre o primeiro trabalho da Compass
+# Documentação sobre o Projeto de Blockchain
 ## Descrição do Projeto 
 
 Este documento descreve o desenvolvimento de um projeto de blockchain implementado em Node.js, como parte do primeiro trabalho da Compass. O projeto consiste em uma implementação simples de uma blockchain, onde blocos contêm transações que são mineradas e verificadas.
@@ -37,32 +37,43 @@ Este projeto possui as seguintes funcionalidades:
 
 - **Consulta de Saldo**: Permite consultar o saldo de endereços específicos, considerando as transações realizadas.
 
+- **Histórico de Transações**: Filtra e exibe todas as transações relacionadas a um endereço específico
+
 ## Estrutura do Código
 
-O código é dividido em três principais classes:
+O código é dividido em quatro principais classes:
 
 1. **Transaction**: Representa uma transação entre dois endereços (remetente e destinatário), incluindo um valor associado.
   
 2. **Block**: Cada bloco contém um timestamp, o hash do bloco anterior, um conjunto de transações e um nonce, que é ajustado até que o hash do bloco atenda à dificuldade da rede.
 
-3. **Blockchain**: Gerencia a cadeia de blocos, incluindo a criação do bloco gênesis, a validação da cadeia e a mineração de novos blocos a partir das transações pendentes.
+3. **Blockchain**: Gerencia a cadeia de blocos, incluindo a criação do bloco gênesis, a validação da cadeia e a mineração de novos blocos a partir das transações pendentes, com as novas funções é possível realizar a validação dos endereços com base no padrão 2x + 40 caracteres hexadecimais e consultar o histórico de transações também.
+
+4. **Keys**: Cria um par de chaves, pública e privada, e gera o endereço da chave pública para que a partir desse endereço seja possível a validação de trasações.
 
 ## Exemplo de Uso
 
-Aqui está um exemplo de como criar transações, minerar blocos e consultar o saldo de um endereço:
+Aqui está um exemplo de como criar transações, minerar blocos, consultar o saldo de um endereço, validar as transações e histórico de transações:
 
 ``` javascript
 
-const bitcoins = new Blockchain('primeiro endereço:');
+const Blockchain = require('./blockchain');
+const Transaction = require('./transaction');
 
-bitcoins.createTransaction(new Transaction('primeiro endereço', 'segundo endereço', 20)); // teste para saber se está funcionando
-bitcoins.createTransaction(new Transaction('primeiro endereço', 'terceiro endereço', 40)); 
+const bitcoins = new Blockchain('2x000000000000000000000000000000000000000001');
+bitcoins.minerarTraPendente('2x000000000000000000000000000000000000001234');
 
-bitcoins.minerarTraPendente('segundo endereço');
+bitcoins.criaTransaction('2x000000000000000000000000000000000000000001', '2x000000000000000000000000000000000000000002', 20); 
+bitcoins.criaTransaction('2x000000000000000000000000000000000000000001', '2x000000000000000000000000000000000000000004', 40); 
+
+bitcoins.minerarTraPendente('22x000000000000000000000000000000000000012345');
 
 bitcoins.printBlockchain();
 
 console.log(`Essa blockchain é válida? ${bitcoins.validBlockchain()}`);
+
+const historico = bitcoins.historicTransaction('2x000000000000000000000000000000000000000001');
+console.log("Histórico de transações: ", historico);
 
 ```
 
