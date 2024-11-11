@@ -28,8 +28,6 @@ class Blockchain {
 
     validAddress(endereco) {
 
-        console.log("Verificando endereço: ", endereco);
-
     if (typeof endereco !== 'string') {
         console.log("Endereço inválido: O endereço não é uma string.");
         return false;
