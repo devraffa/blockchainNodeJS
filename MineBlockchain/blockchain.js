@@ -96,6 +96,39 @@ class Blockchain {
     }
 
     minerarTraPendente(premioMine_ende) {
+        // Calcular a soma de todas as taxas das transações pendentes
+        let taxasTotais = 0;
+        this.pendenciaTrans.forEach(transaction => {
+            taxasTotais += transaction.taxa || 0; // Adiciona a taxa se existir
+        });
+    
+        // Recompensa total para o minerador = prêmio fixo + taxas totais
+        const recompensaTotal = this.premioMine + taxasTotais;
+    
+        // Criar uma transação de recompensa para o minerador
+        this.pendenciaTrans.push(new Transaction(this.firstAddress, premioMine_ende, recompensaTotal));
+    
+        // Criar e minerar o novo bloco
+        let block = new Block(Date.now(), this.ultimoBlock().hash, this.pendenciaTrans);
+        block.mine(this.dif);
+    
+        // Adicionar o bloco à blockchain
+        this.chain.push(block);
+    
+        // Atualizar o saldo do minerador
+        if (!this.validAddress(premioMine_ende)) {
+            console.log("Endereço do minerador inválido.");
+        } else {
+            const saldoAtual = this.saldoEndereco(premioMine_ende);
+            this.saldoEndereco[premioMine_ende] = saldoAtual + recompensaTotal;
+        }
+    
+        // Limpar as transações pendentes
+        this.pendenciaTrans = [];
+    }
+    
+
+    /*minerarTraPendente(premioMine_ende) {
         this.pendenciaTrans.push(new Transaction(this.firstAddress, premioMine_ende, this.premioMine));
 
         let block = new Block(Date.now(), this.ultimoBlock().hash, this.pendenciaTrans);
@@ -103,7 +136,7 @@ class Blockchain {
 
         this.chain.push(block);
         this.pendenciaTrans = []; 
-    }
+    }*/
 
     validBlockchain() {
         console.log("iniciando validação da blockchain");

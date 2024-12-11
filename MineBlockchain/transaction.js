@@ -4,6 +4,7 @@ class Transaction {
         this.originEnde = originEnde;
         this.destinEnde = destinEnde;
         this.valor = valor;
+        this.taxa = taxa;
     }
 }
 
