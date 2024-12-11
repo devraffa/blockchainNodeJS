@@ -27,11 +27,21 @@ class Node{
     }
 
     receiveBlock(block) {
-        if (this.blockchain.validBlockchain()) {
-            console.log(`Nó ${this.id} recebeu bloco válido`);
-            this.blockchain.chain.push(block);
-        } else {
+        console.log(`Nó ${this.id} recebeu um bloco`);
+        
+        // valida o obloco
+        if (!this.blockchain.validBlockchain()) {
             console.log(`Nó ${this.id} rejeitou bloco inválido`);
+            return;
+        }
+
+        // verificar fork
+        if (this.blockchain.chain.length >= block.index) {
+            console.log(`Nó ${this.id} detectou fork`);
+            this.resolveFork(block);
+        } else {
+            console.log(`Nó ${this.id} adicionando bloco à blockchain`);
+            this.blockchain.chain.push(block);
         }
     }
 
@@ -43,6 +53,24 @@ class Node{
             transaction.valor
         );
     }
+
+    syncBlockchain(peer) {
+        console.log(`Nó ${this.id} sincronizando blockchain com Nó ${peer.id}`);
+        this.blockchain.chain = [...peer.blockchain.chain];
+    }
+
+    getAllAddresses() {
+        const addresses = new Set();
+        this.blockchain.chain.forEach(block => {
+            block.data.forEach(transaction => {
+                addresses.add(transaction.originEnde);
+                addresses.add(transaction.destinEnde);
+            });
+        });
+        return Array.from(addresses);
+    }
+
+
 }
 
 module.exports = Node;

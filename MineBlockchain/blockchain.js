@@ -138,6 +138,24 @@ class Blockchain {
         this.pendenciaTrans = []; 
     }*/
 
+        resolveFork(newChain) {
+            // Verifica se a nova cadeia tem mais blocos do que a atual
+            if (newChain.length > this.chain.length) {
+                console.log("Novo fork detectado. Adotando a cadeia mais longa.");
+        
+                // Verifica se a nova cadeia é válida
+                if (this.validBlockchain(newChain)) {
+                    // Substitui a cadeia atual pela nova cadeia
+                    this.chain = newChain;
+                } else {
+                    console.log("A nova cadeia não é válida. Não será adotada.");
+                }
+            } else {
+                console.log("A cadeia atual é mais longa ou igual. Não é necessário resolver o fork.");
+            }
+        }
+
+
     validBlockchain() {
         console.log("iniciando validação da blockchain");
 
