@@ -39,6 +39,14 @@ class Blockchain {
     const genesisTransacao = new Transaction(this.firstAddress, premioMine_ende, this.premioMine);  
     const genesisBlock = new Block(Date.now(), last_hash, [genesisTransacao]);
     genesisBlock.hash = genesisBlock.calcularhash(); 
+
+    const indexDestin = this.vetorSaldo.findIndex(item => item[0] === premioMine_ende);
+    if (indexDestin !== -1) {
+        this.vetorSaldo[indexDestin][1] += this.premioMine;
+    } else {
+        console.log("Endereço inicial inválido no bloco gênesis.");
+    }
+
     return genesisBlock;
         
     }
@@ -66,8 +74,33 @@ class Blockchain {
 
     saldoEndereco(endereco) {
 
-    const entrada = this.vetorSaldo.find(item => item[0] === endereco);
-    return entrada ? entrada[1] : 0;
+            let saldo = 0;
+        
+            // Calcular saldo pelas transações confirmadas na blockchain
+            this.chain.forEach(block => {
+                block.data.forEach(transaction => {
+                    if (transaction.originEnde === endereco) {
+                        saldo -= transaction.valor + transaction.taxa; // Subtrai para saídas
+                    }
+                    if (transaction.destinEnde === endereco) {
+                        saldo += transaction.valor; // Adiciona para entradas
+                    }
+                });
+            });
+        
+            // Calcular saldo pelas transações pendentes
+            this.pendenciaTrans.forEach(transaction => {
+                if (transaction.originEnde === endereco) {
+                    saldo -= transaction.valor + transaction.taxa; // Subtrai para saídas
+                }
+                if (transaction.destinEnde === endereco) {
+                    saldo += transaction.valor; // Adiciona para entradas
+                }
+            });
+        
+            return saldo;
+        }
+        
 
        /* let saldo = 0;
 
@@ -93,7 +126,6 @@ class Blockchain {
         });
 
         return saldo;*/
-    }
 
     criaTransaction(originEnde, destinEnde, valor, taxa=0) {
 
@@ -245,7 +277,7 @@ class Blockchain {
         last Hash: ${block.last_hash}`
             );
 
-            console.log("Transaction de mineração:");
+            console.log("Transaction:");
             block.data.forEach(transaction => {
                 console.log(`   origin Endereco: ${transaction.originEnde}`);
                 console.log(`   destiny Endereco: ${transaction.destinEnde}`);
