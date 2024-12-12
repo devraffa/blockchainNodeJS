@@ -8,6 +8,7 @@ const keys1 = new Keys();
 const bitcoins = new Blockchain(keys1.address);
 
 const endereco2 = bitcoins.criarEndereco();
+console.log("esse é o endereço 2:", endereco2);
 const endereco3 = bitcoins.criarEndereco();
 console.log("esse é o endereço 3:", endereco3);
 const endereco4 = bitcoins.criarEndereco();
