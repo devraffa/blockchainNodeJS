@@ -2,10 +2,10 @@ const Blockchain = require('./blockchain');
 
 class Node{
 
-    constructor(id) {
-        this.id = id; 
-        this.blockchain = new Blockchain('2x000000000000000000000000000000000000000001'); 
-        this.peers = []; 
+    constructor(blockchain){
+        
+        this.blockchain = blockchain;
+        this.peer = [];
     }
 
     connectPeer(peer){

@@ -149,6 +149,11 @@ class Blockchain {
         const transaction = new Transaction(originEnde, destinEnde, valor, taxa);
         this.pendenciaTrans.push(transaction);
 
+        // Aqui você transmite a transação para os outros nós
+        this.nodes.forEach(node => {
+            node.broadcastTransaction(transaction);  // Envia a transação para os outros nós
+        });
+
     }
 
     updateSaldo_Block(){
@@ -195,6 +200,10 @@ class Blockchain {
             const saldoAtual = this.saldoEndereco(premioMine_ende);
             this.saldoEndereco[premioMine_ende] = saldoAtual + recompensaTotal;
         }
+
+        this.nodes.forEach(node => {
+            node.broadcastBlock(block);  // Envia o bloco para os outros nós
+        });
     
         this.pendenciaTrans = [];
     }
@@ -210,7 +219,7 @@ class Blockchain {
         this.pendenciaTrans = []; 
     }*/
 
-        resolveFork(newChain) {
+        /*resolveFork(newChain) {
             // Verifica se a nova cadeia tem mais blocos do que a atual
             if (newChain.length > this.chain.length) {
                 console.log("Novo fork detectado. Adotando a cadeia mais longa.");
@@ -225,7 +234,7 @@ class Blockchain {
             } else {
                 console.log("A cadeia atual é mais longa ou igual. Não é necessário resolver o fork.");
             }
-        }
+        }*/
 
 
     validBlockchain() {
