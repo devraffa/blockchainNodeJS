@@ -1,14 +1,37 @@
 const Block = require('./block');
+const Keys = require('./keys');
 const Transaction = require('./transaction');
 
 class Blockchain {
     constructor(Endereco) {
         this.premioMine = 500.00;
+        this.vetorSaldo = [];
+        this.registraAddress("2x000000000000000000000000000000000000000000");
         this.firstAddress ="2x000000000000000000000000000000000000000000"
+        this.registraAddress(Endereco);
         this.chain = [this.criaGenesis(Endereco)];
         this.dif = 4;
         this.pendenciaTrans = [];
     }
+
+    registraAddress(endereco){
+
+        if(!this.validAddress(endereco)){
+            console.log("endereço invalido");
+        }
+        else{
+            this.vetorSaldo.push([endereco, 0]);
+        }
+    }
+
+    criarEndereco(){
+
+        const key = new Keys();
+        const endereco = key.address;
+        this.registraAddress(endereco);
+        return endereco;
+    }
+
 
     criaGenesis(premioMine_ende) {
         
@@ -41,13 +64,18 @@ class Blockchain {
         return hexRegex.test(addressnotfix);
     }
 
-    saldoEndereco(Endereco) {
-        let saldo = 0;
+    saldoEndereco(endereco) {
+
+    const entrada = this.vetorSaldo.find(item => item[0] === endereco);
+    return entrada ? entrada[1] : 0;
+
+       /* let saldo = 0;
 
         this.chain.forEach(block => {
             block.data.forEach(transaction => {
                 if (transaction.originEnde === Endereco) {
                     saldo -= transaction.valor;
+                    saldo -= transaction.taxa;
                 }
                 if (transaction.destinEnde === Endereco) {
                     saldo += transaction.valor;
@@ -64,10 +92,10 @@ class Blockchain {
             }
         });
 
-        return saldo;
+        return saldo;*/
     }
 
-    criaTransaction(originEnde, destinEnde, valor) {
+    criaTransaction(originEnde, destinEnde, valor, taxa=0) {
 
         if (!this.validAddress(originEnde)) {
             console.log("transação inválida: endereço de origem inválido.");
@@ -81,13 +109,28 @@ class Blockchain {
     
         const saldo = this.saldoEndereco(originEnde);
     
-        if (saldo < valor && originEnde !== this.firstAddress) {
-            console.log('transação inválida: saldo insuficiente.');
+        if (  originEnde !== this.firstAddress && saldo < valor) {
+            console.log(`transação inválida: saldo insuficiente. Endereço de origem: ${originEnde}, destino: ${destinEnde}`);
             return;
         } 
 
-        const transaction = new Transaction(originEnde, destinEnde, valor);
+        const transaction = new Transaction(originEnde, destinEnde, valor, taxa);
         this.pendenciaTrans.push(transaction);
+
+    }
+
+    updateSaldo_Block(){
+
+        this.pendenciaTrans.forEach((transaction)=>{
+            const indexOrigin = this.vetorSaldo.findIndex(item => item[0] === transaction.originEnde);
+            console.log(`indice endereço origem: ${indexOrigin}`);
+            const indexDestin = this.vetorSaldo.findIndex(item=> item[0] === transaction.destinEnde);
+            console.log(`indice endereço origem: ${indexDestin}`);
+            this.vetorSaldo[indexOrigin][1] -= transaction.valor + transaction.taxa;
+            this.vetorSaldo[indexDestin][1] += transaction.valor;
+        });
+
+        this.pendenciaTrans = [];
     }
     
 
@@ -95,27 +138,28 @@ class Blockchain {
         return this.chain[this.chain.length - 1];
     }
 
+    validarTransaction_pendente(){
+        
+    }
+
     minerarTraPendente(premioMine_ende) {
-        // Calcular a soma de todas as taxas das transações pendentes
+        // calcular a soma de todas as taxas das transações pendentes
         let taxasTotais = 0;
         this.pendenciaTrans.forEach(transaction => {
-            taxasTotais += transaction.taxa || 0; // Adiciona a taxa se existir
+            taxasTotais += transaction.taxa || 0; // adiciona a taxa se existir
         });
     
-        // Recompensa total para o minerador = prêmio fixo + taxas totais
         const recompensaTotal = this.premioMine + taxasTotais;
     
-        // Criar uma transação de recompensa para o minerador
         this.pendenciaTrans.push(new Transaction(this.firstAddress, premioMine_ende, recompensaTotal));
-    
-        // Criar e minerar o novo bloco
+
         let block = new Block(Date.now(), this.ultimoBlock().hash, this.pendenciaTrans);
         block.mine(this.dif);
-    
-        // Adicionar o bloco à blockchain
+
+        this.updateSaldo_Block();
+
         this.chain.push(block);
-    
-        // Atualizar o saldo do minerador
+
         if (!this.validAddress(premioMine_ende)) {
             console.log("Endereço do minerador inválido.");
         } else {
@@ -123,7 +167,6 @@ class Blockchain {
             this.saldoEndereco[premioMine_ende] = saldoAtual + recompensaTotal;
         }
     
-        // Limpar as transações pendentes
         this.pendenciaTrans = [];
     }
     
@@ -205,15 +248,18 @@ class Blockchain {
         last Hash: ${block.last_hash}`
             );
 
-            console.log("Transaction:");
+            console.log("Transaction de mineração:");
             block.data.forEach(transaction => {
                 console.log(`   origin Endereco: ${transaction.originEnde}`);
                 console.log(`   destiny Endereco: ${transaction.destinEnde}`);
                 console.log(`   valor: ${transaction.valor}`);
+                console.log(`   taxa: ${transaction.taxa}`);
             });
     
             console.log('\n'); 
         });
+
+        console.log(this.vetorSaldo);
     }
 }
 

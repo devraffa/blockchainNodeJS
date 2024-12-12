@@ -1,19 +1,28 @@
 const Blockchain = require('./blockchain');
 const Transaction = require('./transaction');
+const Keys = require('./keys');
 
-const bitcoins = new Blockchain('2x000000000000000000000000000000000000000001');
-bitcoins.minerarTraPendente('2x000000000000000000000000000000000000001234');
 
-bitcoins.criaTransaction('2x000000000000000000000000000000000000000001', '2x000000000000000000000000000000000000000002', 20); 
-bitcoins.criaTransaction('2x000000000000000000000000000000000000000001', '2x000000000000000000000000000000000000000004', 40); 
+const keys1 = new Keys();
 
-bitcoins.minerarTraPendente('22x000000000000000000000000000000000000012345');
+const bitcoins = new Blockchain(keys1.address);
+
+const endereco2 = bitcoins.criarEndereco();
+const endereco3 = bitcoins.criarEndereco();
+const endereco4 = bitcoins.criarEndereco();
+const endereco5 = bitcoins.criarEndereco();
+
+
+bitcoins.criaTransaction(keys1.address, endereco3, 20, 2);
+//bitcoins.criaTransaction(endereco3, endereco4, 40,4);
+
+bitcoins.minerarTraPendente(endereco5);
 
 bitcoins.printBlockchain();
 
 console.log(`Essa blockchain é válida? ${bitcoins.validBlockchain()}`);
 
-const historico = bitcoins.historicTransaction('2x000000000000000000000000000000000000000001');
+const historico = bitcoins.historicTransaction(endereco2);
 console.log("Histórico de transações: ", historico);
 
 
