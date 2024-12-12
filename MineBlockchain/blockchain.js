@@ -5,7 +5,7 @@ const Transaction = require('./transaction');
 class Blockchain {
     constructor(Endereco) {
         this.premioMine = 500.00;
-        this.vetorSaldo = [];
+        this.vetorSaldo = [Endereco, this.premioMine];
         this.registraAddress("2x000000000000000000000000000000000000000000");
         this.firstAddress ="2x000000000000000000000000000000000000000000"
         this.registraAddress(Endereco);
@@ -138,9 +138,6 @@ class Blockchain {
         return this.chain[this.chain.length - 1];
     }
 
-    validarTransaction_pendente(){
-        
-    }
 
     minerarTraPendente(premioMine_ende) {
         // calcular a soma de todas as taxas das transações pendentes
