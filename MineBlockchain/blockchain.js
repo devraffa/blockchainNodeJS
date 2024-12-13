@@ -1,6 +1,7 @@
 const Block = require('./block');
 const Keys = require('./keys');
 const Transaction = require('./transaction');
+const Node = require('./node');
 
 class Blockchain {
     constructor(Endereco) {
@@ -12,6 +13,7 @@ class Blockchain {
         this.chain = [this.criaGenesis(Endereco)];
         this.dif = 4;
         this.pendenciaTrans = [];
+        this.node = new Node(); // conectando a blockchain com um nó
     }
 
     registraAddress(endereco){
@@ -149,10 +151,7 @@ class Blockchain {
         const transaction = new Transaction(originEnde, destinEnde, valor, taxa);
         this.pendenciaTrans.push(transaction);
 
-        // Aqui você transmite a transação para os outros nós
-        this.nodes.forEach(node => {
-            node.broadcastTransaction(transaction);  // Envia a transação para os outros nós
-        });
+        this.node.broadcastTransaction(transaction);
 
     }
 
@@ -200,12 +199,10 @@ class Blockchain {
             const saldoAtual = this.saldoEndereco(premioMine_ende);
             this.saldoEndereco[premioMine_ende] = saldoAtual + recompensaTotal;
         }
-
-        this.nodes.forEach(node => {
-            node.broadcastBlock(block);  // Envia o bloco para os outros nós
-        });
     
         this.pendenciaTrans = [];
+        this.node.broadcastBlock(novoBloco); 
+        this.node.resolveFork(novoBloco);
     }
     
 
