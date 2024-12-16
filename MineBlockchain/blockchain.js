@@ -1,19 +1,17 @@
 const Block = require('./block');
 const Keys = require('./keys');
 const Transaction = require('./transaction');
-const Node = require('./node');
 
 class Blockchain {
     constructor(Endereco) {
         this.premioMine = 500.00;
-        this.vetorSaldo = [Endereco, this.premioMine];
+        this.vetorSaldo = [];
         this.registraAddress("2x000000000000000000000000000000000000000000");
         this.firstAddress ="2x000000000000000000000000000000000000000000"
         this.registraAddress(Endereco);
         this.chain = [this.criaGenesis(Endereco)];
         this.dif = 4;
         this.pendenciaTrans = [];
-        this.node = new Node(); // conectando a blockchain com um nó
     }
 
     registraAddress(endereco){
@@ -103,32 +101,6 @@ class Blockchain {
             return saldo;
         }
         
-
-       /* let saldo = 0;
-
-        this.chain.forEach(block => {
-            block.data.forEach(transaction => {
-                if (transaction.originEnde === Endereco) {
-                    saldo -= transaction.valor;
-                    saldo -= transaction.taxa;
-                }
-                if (transaction.destinEnde === Endereco) {
-                    saldo += transaction.valor;
-                }
-            });
-        });
-            // para as pendetes que bugavam 
-        this.pendenciaTrans.forEach(transaction => {
-            if (transaction.originEnde === Endereco) {
-                saldo -= transaction.valor;
-            }
-            if (transaction.destinEnde === Endereco) {
-                saldo += transaction.valor;
-            }
-        });
-
-        return saldo;*/
-
     criaTransaction(originEnde, destinEnde, valor, taxa=0) {
 
         if (!this.validAddress(originEnde)) {
@@ -143,7 +115,8 @@ class Blockchain {
     
         const saldo = this.saldoEndereco(originEnde);
     
-        if (  originEnde !== this.firstAddress && saldo < valor) {
+        if (originEnde !== this.firstAddress && saldo < (valor + taxa)) {
+            console.log(saldo)
             console.log(`transação inválida: saldo insuficiente. Endereço de origem: ${originEnde}, destino: ${destinEnde}`);
             return;
         } 
@@ -151,7 +124,7 @@ class Blockchain {
         const transaction = new Transaction(originEnde, destinEnde, valor, taxa);
         this.pendenciaTrans.push(transaction);
 
-        this.node.broadcastTransaction(transaction);
+        return transaction;
 
     }
 
@@ -201,8 +174,10 @@ class Blockchain {
         }
     
         this.pendenciaTrans = [];
-        this.node.broadcastBlock(novoBloco); 
-        this.node.resolveFork(novoBloco);
+
+
+        return block;
+
     }
     
 
@@ -215,24 +190,6 @@ class Blockchain {
         this.chain.push(block);
         this.pendenciaTrans = []; 
     }*/
-
-        /*resolveFork(newChain) {
-            // Verifica se a nova cadeia tem mais blocos do que a atual
-            if (newChain.length > this.chain.length) {
-                console.log("Novo fork detectado. Adotando a cadeia mais longa.");
-        
-                // Verifica se a nova cadeia é válida
-                if (this.validBlockchain(newChain)) {
-                    // Substitui a cadeia atual pela nova cadeia
-                    this.chain = newChain;
-                } else {
-                    console.log("A nova cadeia não é válida. Não será adotada.");
-                }
-            } else {
-                console.log("A cadeia atual é mais longa ou igual. Não é necessário resolver o fork.");
-            }
-        }*/
-
 
     validBlockchain() {
         console.log("iniciando validação da blockchain");
@@ -274,6 +231,14 @@ class Blockchain {
         return history;
     }
 
+    // clone() {
+    //     const newBlockchain = new Blockchain(this.firstAddress);
+    //     newBlockchain.chain = this.chain.map(block => block.clone());  // Supondo que Block tenha um método clone
+    //     newBlockchain.pendenciaTrans = JSON.parse(JSON.stringify(this.pendenciaTrans));
+    //     newBlockchain.vetorSaldo = JSON.parse(JSON.stringify(this.vetorSaldo));
+    //     return newBlockchain;
+    // }
+
     printBlockchain() {
         this.chain.forEach(block => {
             console.log(`Block
@@ -294,7 +259,11 @@ class Blockchain {
             console.log('\n'); 
         });
 
-        console.log(this.vetorSaldo);
+        this.vetorSaldo.forEach(vetor =>{
+            if(vetor[0] != '2x000000000000000000000000000000000000000000'){
+                console.log(vetor);
+            }
+        });
     }
 }
 

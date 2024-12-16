@@ -1,55 +1,53 @@
-const Blockchain = require('./blockchain');
-const Transaction = require('./transaction');
-const crypto = require('crypto');
+const cloneDeep = require('lodash/cloneDeep');
 
 class Node {
-    constructor(id, blockchain) {
+    constructor(blockchain) {
 
-        this.blockchain = blockchain; // Instância da blockchain
-        this.peers = []; // Lista de peers conectados
+        this.blockchain = cloneDeep(blockchain); // Instância da blockchain
+        this.peers = new Set();
     }
 
-    // Gera um ID exclusivo para uma transação
-    generateTransactionID(transaction) {
-        const hash = crypto.createHash('sha256');
-        hash.update(transaction.originEnde + transaction.destinEnde + transaction.valor + transaction.taxa + transaction.timestamp);
-        return hash.digest('hex');
+    //se já tem aquele bloco na blockchain
+    IFcontainsBlock(blockHash){
+        return this.blockchain.chain.some((block)=> block.hash === blockHash);
     }
 
-    // Verifica se um bloco específico já está na blockchain
-    containsBlock(blockHash) {
-        return this.blockchain.chain.some((block) => block.hash === blockHash);
-    }
-
-    // Verifica se uma transação específica já está no pool de transações pendentes
-    containsTransaction(transactionSignature) {
-        return this.blockchain.pendenciaTrans.some(
-            (transaction) => transaction.signature === transactionSignature
-        );
+    //se já tem aquela transação
+    IFcontainsTransaction(transactions){
+        return this.blockchain.pendenciaTrans.some((transaction) => transaction.id === transactions.id);
     }
 
     // Conecta este nó a outro nó
-    connectPeer(peer) {
-        if (!this.peers.includes(peer)) {
-            this.peers.push(peer);
-            peer.connectPeer(this); // Conexão bidirecional
+    connectNode(peer) {
+
+        if (!this.peers.has(peer)) {  // Verifica se o peer já está na lista
+            this.peers.add(peer);     // Adiciona o peer ao Set
+            peer.peers.add(this);     // Adiciona este nó ao Set do peer
         }
+    
     }
 
     // Transmite um bloco para todos os peers conectados
     broadcastBlock(block) {
-        this.peers.forEach(peer => {
+        
+        console.log("inicio broadcast");
+
+            console.log("detro do if broadcast");
+            this.peers.forEach(peer => {
             console.log('Nó enviando bloco para todos');
             peer.receiveBlock(block);
+            
         });
+
     }
 
     // Transmite uma transação para todos os peers conectados
-    broadcastTransaction(transaction) {
-        transaction= this.generateTransactionID(transaction); // Adiciona o ID à transação
+    broadcastTransaction(transaction) { 
+
         this.peers.forEach(peer => {
             console.log('nó enviando transactions para todos');
             peer.receiveTransaction(transaction);
+
         });
     }
 
@@ -57,22 +55,23 @@ class Node {
     receiveBlock(block) {
         console.log('Nó recebeu um bloco');
 
-        // Valida o bloco
+        if (block.hash !== block.calcularhash()) {
+            console.log('hash inválido.');
+            return;
+        }
+        
         const lastBlock = this.blockchain.ultimoBlock();
         if (block.last_hash !== lastBlock.hash) {
             console.log('hash anterior não corresponde.');
             return;
         }
 
-        // Verifica se o bloco recebido é válido
-        if (block.hash !== block.calcularhash()) {
-            console.log('hash inválido.');
-            return;
-        }
-
         // Adiciona o bloco à blockchain local
         this.blockchain.chain.push(block);
         console.log('adicionou bloco à blockchain.');
+
+        this.update_saldo(block);
+        this.removeTransaction(block);
     }
 
     // Recebe uma transação de outro nó
@@ -93,94 +92,64 @@ class Node {
         }
 
         // Verifica ou gera o ID da transação
-        if (!transaction.id) {
-            transaction.id = this.generateTransactionID(transaction);
+        if (transaction.id != transaction.generateID(transaction)) {
+            console.log("id invalido");
         }
 
         // Adiciona a transação às pendências
         this.blockchain.pendenciaTrans.push(transaction);
         console.log('adicionou transação às pendências.');
 
-        // Transmite a transação para os peers
-        this.broadcastTransaction(transaction);
     }
 
-    // Sincroniza a blockchain com outro nó
-    syncBlockchain(peer) {
+    // //resolver o fork
+    sync(peer) {
         if (peer.blockchain.chain.length > this.blockchain.chain.length) {
-            console.log('sincronizando blockchain com Nó');
-            this.blockchain.chain = JSON.parse(JSON.stringify(peer.blockchain.chain));
+            console.log('Sincronizando blockchain com nó');
+            this.blockchain = cloneDeep(peer.blockchain); // Cópia profunda da blockchain do peer
+            this.broadcastBlock(peer.blockchain.chain[peer.blockchain.chain.length - 1]); // Propaga o bloco mais recente
         } else {
-            console.log('já possui a cadeia mais longa.');
+            console.log('Já possui a cadeia mais longa.');
         }
     }
 
-    // Obtém todos os endereços envolvidos em transações da blockchain
-    getAllAddresses() {
-        const addresses = new Set();
-        this.blockchain.chain.forEach(block => {
-            block.data.forEach(transaction => {
-                addresses.add(transaction.originEnde);
-                addresses.add(transaction.destinEnde);
-            });
+    update_saldo(block) {
+        block.data.forEach((transaction) => {
+            const indexOrigin = this.blockchain.vetorSaldo.findIndex(item => item[0] === transaction.originEnde);
+            const indexDestin = this.blockchain.vetorSaldo.findIndex(item => item[0] === transaction.destinEnde);
+    
+            // Verifique se os índices foram encontrados
+            if (indexOrigin === -1) {
+                console.log(`Endereço de origem não encontrado: ${transaction.originEnde}`);
+                return;
+            }
+            if (indexDestin === -1) {
+                console.log(`Endereço de destino não encontrado: ${transaction.destinEnde}`);
+                return;
+            }
+    
+            // Atualiza os saldos se os índices forem válidos
+            this.blockchain.vetorSaldo[indexOrigin][1] -= transaction.valor + transaction.taxa;
+            this.blockchain.vetorSaldo[indexDestin][1] += transaction.valor;
+    
+            console.log(`Saldo atualizado: ${transaction.originEnde} -> ${this.blockchain.vetorSaldo[indexOrigin][1]}`);
+            console.log(`Saldo atualizado: ${transaction.destinEnde} -> ${this.blockchain.vetorSaldo[indexDestin][1]}`);
         });
-        return Array.from(addresses);
     }
+    
+    removeTransaction(block){
 
-    update_saldo() {
-        const allAddresses = this.getAllAddresses();
-        allAddresses.forEach((address) => {
-            const balance = this.blockchain.saldoEndereco(address);
-            this.blockchain.update_saldo(address, balance);
-        });
-        console.log('Saldos atualizados');
-    }
-
-    resolveFork(peer) {
-        if (peer.blockchain.chain.length > this.blockchain.chain.length) {
-            console.log('detectou um fork');
-    
-            // Substitui a cadeia local pela cadeia do peer
-            this.blockchain.chain = JSON.parse(JSON.stringify(peer.blockchain.chain));
-            console.log('atualizou a blockchain para a mais longa.');
-    
-            // Atualiza o livro de saldos
-            const balanceBook = new Map();
-            this.blockchain.chain.forEach((block) => {
-                block.data.forEach((transaction) => {
-                    const fromBalance = balanceBook.get(transaction.originEnde) || 0;
-                    balanceBook.set(
-                        transaction.originEnde,
-                        fromBalance - (transaction.valor + transaction.taxa)
-                    );
-    
-                    const toBalance = balanceBook.get(transaction.destinEnde) || 0;
-                    balanceBook.set(
-                        transaction.destinEnde,
-                        toBalance + transaction.valor
-                    );
-                });
-            });
-            this.blockchain.balanceBook = balanceBook;
-            console.log('atualizou os saldos.');
-    
-            // Remove transações pendentes que já estão em blocos
-            const confirmedTransactions = new Set();
-            this.blockchain.chain.forEach((block) => {
-                block.data.forEach((transaction) => {
-                    confirmedTransactions.add(transaction.signature);
-                });
-            });
-    
-            this.blockchain.pendenciaTrans = this.blockchain.pendenciaTrans.filter(
-                (transaction) => !confirmedTransactions.has(transaction.signature)
-            );
-            console.log('limpou o pool de transações pendentes.');
-        } else {
-            console.log('manteve sua blockchain como a mais longa.');
-        }
-    }
-        
+        block.data.forEach((transaction) =>{
+            if(this.IFcontainsTransaction(transaction)){
+                const indexT = this.blockchain.pendenciaTrans.findIndex(item => item.id === transaction.id)
+                this.blockchain.pendenciaTrans.splice(indexT, 1);
+                console.log(`Transação com id ${transaction.id} removida.`);
+            }
+            else{
+                console.log("não achada a transação");
+            }
+        });       
+}
 }
 
 module.exports = Node;

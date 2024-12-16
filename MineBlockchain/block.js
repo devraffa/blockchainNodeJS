@@ -28,11 +28,15 @@ class Block {
             this.hash = this.calcularhash();
         }
 
-        /*for (this.nonce = 0; !found; this.nonce++) {
-                this.hash = this.calculateBlockHash();
-                found = this.hash.substring(0, difficulty) === target;
-            }*/
     }
+
+    // clone() {
+    // const newBlock = new Block(this.timestamp, this.last_hash, this.data);
+    // newBlock.hash = this.hash;  // Preserva o hash atual do bloco
+    // newBlock.nonce = this.nonce;
+    // console.log("Clonando bloco:", this.hash, "Novo bloco:", newBlock.hash);
+    // return newBlock;
+    // }
     
 }
 
