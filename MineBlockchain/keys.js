@@ -26,16 +26,7 @@ class Keys {
 
     return prefix.concat(ripemd160);
   }
-
-  /*verifyTransaction(transaction) {
-    const validAddress = (address) => /^2x00[0-9a-fA-F]{40}$/.test(address);
-
-    if (!validAddress(transaction.fromAddress) || !validAddress(transaction.toAddress)) {
-      return false; 
-    }
-
-    return true;
-  }*/
+  
 }
 
 module.exports = Keys;

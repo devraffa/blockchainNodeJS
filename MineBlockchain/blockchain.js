@@ -180,17 +180,6 @@ class Blockchain {
 
     }
     
-
-    /*minerarTraPendente(premioMine_ende) {
-        this.pendenciaTrans.push(new Transaction(this.firstAddress, premioMine_ende, this.premioMine));
-
-        let block = new Block(Date.now(), this.ultimoBlock().hash, this.pendenciaTrans);
-        block.mine(this.dif);
-
-        this.chain.push(block);
-        this.pendenciaTrans = []; 
-    }*/
-
     validBlockchain() {
         console.log("iniciando validação da blockchain");
 
@@ -231,13 +220,6 @@ class Blockchain {
         return history;
     }
 
-    // clone() {
-    //     const newBlockchain = new Blockchain(this.firstAddress);
-    //     newBlockchain.chain = this.chain.map(block => block.clone());  // Supondo que Block tenha um método clone
-    //     newBlockchain.pendenciaTrans = JSON.parse(JSON.stringify(this.pendenciaTrans));
-    //     newBlockchain.vetorSaldo = JSON.parse(JSON.stringify(this.vetorSaldo));
-    //     return newBlockchain;
-    // }
 
     printBlockchain() {
         this.chain.forEach(block => {

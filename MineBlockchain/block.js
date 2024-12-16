@@ -13,8 +13,6 @@ class Block {
         return crypto.createHash('sha256').update(
             this.timestamp + this.last_hash + JSON.stringify(this.data) + this.nonce
         ).digest('hex');
-        // const info = this.tempo + this.hashAnterior + JSON.stringify(this.dados) + this.nonce; erro por algum motivo
-        // return crypto.createHash('sha256').update(info).digest('hex');
     }
 
     defTimestamp() {
@@ -29,15 +27,7 @@ class Block {
         }
 
     }
-
-    // clone() {
-    // const newBlock = new Block(this.timestamp, this.last_hash, this.data);
-    // newBlock.hash = this.hash;  // Preserva o hash atual do bloco
-    // newBlock.nonce = this.nonce;
-    // console.log("Clonando bloco:", this.hash, "Novo bloco:", newBlock.hash);
-    // return newBlock;
-    // }
-    
+  
 }
 
 module.exports = Block;
