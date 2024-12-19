@@ -132,9 +132,7 @@ class Blockchain {
 
         this.pendenciaTrans.forEach((transaction)=>{
             const indexOrigin = this.vetorSaldo.findIndex(item => item[0] === transaction.originEnde);
-            console.log(`indice endereço origem: ${indexOrigin}`);
             const indexDestin = this.vetorSaldo.findIndex(item=> item[0] === transaction.destinEnde);
-            console.log(`indice endereço origem: ${indexDestin}`);
             this.vetorSaldo[indexOrigin][1] -= transaction.valor + transaction.taxa;
             this.vetorSaldo[indexDestin][1] += transaction.valor;
         });

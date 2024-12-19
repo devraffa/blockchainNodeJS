@@ -29,10 +29,7 @@ class Node {
 
     // Transmite um bloco para todos os peers conectados
     broadcastBlock(block) {
-        
-        console.log("inicio broadcast");
 
-            console.log("detro do if broadcast");
             this.peers.forEach(peer => {
             console.log('Nó enviando bloco para todos');
             peer.receiveBlock(block);
@@ -53,7 +50,6 @@ class Node {
 
     // Recebe um bloco de outro nó
     receiveBlock(block) {
-        console.log('Nó recebeu um bloco');
 
         if (block.hash !== block.calcularhash()) {
             console.log('hash inválido.');
@@ -76,7 +72,6 @@ class Node {
 
     // Recebe uma transação de outro nó
     receiveTransaction(transaction) {
-        console.log('recebeu transação');
 
         // Valida os endereços e saldo na transação
         if (!this.blockchain.validAddress(transaction.originEnde) ||
